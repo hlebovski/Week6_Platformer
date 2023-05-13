@@ -1,0 +1,221 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil Cascadia Mono;}{\f1\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green0\blue255;\red0\green0\blue0;\red43\green145\blue175;\red0\green128\blue0;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\cf1\f0\fs19\lang9 using\cf2  System;\par
+\cf1 using\cf2  System.Collections;\par
+\cf1 using\cf2  System.Collections.Generic;\par
+\cf1 using\cf2  Unity.VisualScripting;\par
+\cf1 using\cf2  UnityEngine;\par
+\cf1 using\cf2  UnityEngine.InputSystem;\par
+\par
+[RequireComponent(\cf1 typeof\cf2 (Rigidbody), \cf1 typeof\cf2 (TouchingDirections))]\par
+\cf1 public\cf2  \cf1 class\cf2  \cf3 PlayerController\cf2  : MonoBehaviour \{\par
+\par
+\tab [SerializeField] \cf1 float\cf2  walkSpeed = 6f;\par
+\tab [SerializeField] \cf1 float\cf2  runSpeed = 10f;\par
+\tab [SerializeField] \cf1 float\cf2  airWalkSpeed = 6f;\par
+\tab [SerializeField] \cf1 float\cf2  jumpHeight = 3f;\par
+\tab [SerializeField] \cf1 float\cf2  gravityMultiplier = 1.5f;\par
+\par
+    Vector2 moveInput;\par
+    [SerializeField]  Vector2 lookInput;\par
+    \cf1 float\cf2  jumpInput;\par
+    \cf1 float\cf2  gravity;\par
+\par
+    [SerializeField] Vector2 velocity;\par
+    [SerializeField] Vector2 acceleration;\par
+\par
+    [SerializeField]\par
+    \cf1 public\cf2  \cf1 bool\cf2  JumpPressed = \cf1 false\cf2 ;\par
+    \cf1 public\cf2  \cf1 bool\cf2  FirePressed = \cf1 false\cf2 ;\par
+    \cf1 public\cf2  \cf1 bool\cf2  isJumping = \cf1 false\cf2 ;\par
+\par
+\par
+    Rigidbody rbPlayer;\par
+\tab Animator animator;\par
+    TouchingDirections touchingDirections;\par
+\par
+\par
+\par
+    \cf4 // ---------- <Properties ---------- //\cf2\par
+\par
+    \cf1 public\cf2  \cf1 float\cf2  CurrentMoveSpeed \{\par
+\tab\tab\cf1 get\cf2  \{\par
+\tab\tab\tab\cf1 if\cf2  (IsMoving && !touchingDirections.IsOnWall) \{\par
+\tab\tab\tab\tab\cf1 if\cf2  (touchingDirections.IsGrounded) \{\par
+\tab\tab\tab\tab\tab\cf1 if\cf2  (IsRunning) \{ \par
+\tab\tab\tab\tab\tab\tab\cf1 return\cf2  runSpeed; \par
+\tab\tab\tab\tab\tab\} \par
+\tab\tab\tab\tab\tab\cf1 else\cf2  \{ \par
+\tab\tab\tab\tab\tab\tab\cf1 return\cf2  walkSpeed; \par
+\tab\tab\tab\tab\tab\}\par
+\tab\tab\tab\tab\} \cf1 else\cf2  \cf1 if\cf2  (rbPlayer.velocity.y > 0) \{\par
+\tab\tab\tab\tab\tab\cf4 //Air Moves\cf2\par
+\tab\tab\tab\tab\tab\cf1 if\cf2  (IsRunning) \{\par
+\tab\tab\tab\tab\tab\tab\cf1 return\cf2  runSpeed;\par
+\tab\tab\tab\tab\tab\} \cf1 else\cf2  \{\par
+\tab\tab\tab\tab\tab\tab\cf1 return\cf2  walkSpeed;\par
+\tab\tab\tab\tab\tab\}\par
+\tab\tab\tab\tab\} \cf1 else\cf2  \{\par
+                    \cf1 if\cf2  (IsRunning) \{\par
+                        \cf1 return\cf2  airWalkSpeed;\par
+                    \} \cf1 else\cf2  \{\par
+                        \cf1 return\cf2  walkSpeed;\par
+                    \}\par
+                \}\par
+\tab\tab\tab\} \cf1 else\cf2  \{ \par
+\tab\tab\tab\tab\cf4 //Idle speed is 0\cf2\par
+\tab\tab\tab\tab\cf1 return\cf2  0f; \par
+\tab\tab\tab\}\par
+\tab\tab\}\par
+\tab\}\par
+\par
+    [SerializeField]\par
+\tab\cf1 private\cf2  \cf1 bool\cf2  _isMoving = \cf1 false\cf2 ;\par
+\par
+\tab\cf1 public\cf2  \cf1 bool\cf2  IsMoving \{ \par
+\tab\tab\cf1 get\cf2  \{ \par
+\tab\tab\tab\cf1 return\cf2  _isMoving;\par
+\tab\tab\} \par
+\tab\tab\cf1 private\cf2  \cf1 set\cf2  \{\par
+\tab\tab\tab _isMoving = value;\par
+\tab\tab\tab animator.SetBool(AnimationStrings.isMoving, value);\par
+\tab\tab\} \par
+\tab\}\par
+\par
+\tab [SerializeField]\par
+\tab\cf1 private\cf2  \cf1 bool\cf2  _isRunning = \cf1 false\cf2 ;\par
+\par
+\tab\cf1 private\cf2  \cf1 bool\cf2  IsRunning \{\par
+\tab\tab\cf1 get\cf2  \{\par
+\tab\tab\tab\cf1 return\cf2  _isRunning;\par
+\tab\tab\}\par
+\tab\tab\cf1 set\cf2  \{ \par
+\tab\tab\tab _isRunning = value;\par
+\tab\tab\tab animator.SetBool(AnimationStrings.isRunning, value);\par
+\tab\tab\}\par
+\tab\}\par
+\par
+\tab [SerializeField]\par
+\tab\cf1 private\cf2  \cf1 bool\cf2  _isFacingRight = \cf1 true\cf2 ;\par
+\par
+    \cf1 public\cf2  \cf1 bool\cf2  IsFacingRight \{ \cf1 get\cf2  \{\par
+\tab\tab\tab\cf1 return\cf2  _isFacingRight;\par
+\tab\tab\} \cf1 private\cf2  \cf1 set\cf2  \{ \par
+\tab\tab\tab\cf1 if\cf2 (_isFacingRight != value) \{\par
+\tab\tab\tab\tab\cf4 //transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);\cf2\par
+\tab\tab\tab\}\par
+\tab\tab\tab _isFacingRight = value;\par
+\tab\tab\} \par
+\tab\}\par
+\par
+    \cf4 // ---------- Properties> ---------- //\cf2\par
+\par
+\par
+\par
+\par
+    \cf1 private\cf2  \cf1 void\cf2  \cf1 Awake\cf2 () \{\par
+\tab\tab rbPlayer = GetComponent<Rigidbody>();\par
+\tab\tab animator = GetComponent<Animator>();\par
+\tab\tab touchingDirections = GetComponent<TouchingDirections>();\par
+\tab\}\par
+\par
+\par
+\par
+\tab\cf1 private\cf2  \cf1 void\cf2  \cf1 FixedUpdate\cf2 () \{\par
+\par
+        \cf4 // Setting velocity to accumulate to reach wanted velocity and applying it to RB:\cf2\par
+        Vector2 wantedVelocity = moveInput * CurrentMoveSpeed;\par
+        velocity = Vector2.MoveTowards(velocity, wantedVelocity, acceleration.x * Time.deltaTime);\par
+\par
+        rbPlayer.velocity = \cf1 new\cf2  Vector3(velocity.x, rbPlayer.velocity.y, rbPlayer.velocity.z);\par
+\par
+\par
+        \cf4 // Setting modified gravity and applying it to RB:\cf2\par
+        gravity = Physics.gravity.y * gravityMultiplier;\par
+\par
+\tab\tab\cf4 //Little jump related test for shortening the jump\cf2\par
+        \cf1 if\cf2  (isJumping && rbPlayer.velocity.y > 0 && jumpInput < 0.5f) \{ gravity *= 15;\}\par
+\par
+        rbPlayer.velocity = \cf1 new\cf2  Vector3(rbPlayer.velocity.x, rbPlayer.velocity.y + gravity * Time.deltaTime, rbPlayer.velocity.z);\par
+\par
+\par
+        \cf4 // Handling jump and applying it to RB:\cf2\par
+        \cf1 if\cf2  (jumpInput > 0.5) \{\par
+\tab\tab\tab\cf1 if\cf2  (touchingDirections.IsGrounded) \{\par
+                rbPlayer.velocity = \cf1 new\cf2  Vector3(rbPlayer.velocity.x, Mathf.Sqrt(jumpHeight * -3f * gravity), rbPlayer.velocity.z);\par
+                isJumping = \cf1 true\cf2 ;\par
+            \}\par
+\tab\tab\} \cf1 else\cf2  \{ isJumping = \cf1 false\cf2 ; \par
+\tab\tab\}\par
+\par
+\tab\tab animator.SetFloat(AnimationStrings.yVelocity, rbPlayer.velocity.y);\par
+    \}\par
+\par
+\par
+\par
+\par
+\par
+\par
+    \cf4 // ---------- <Utils> ---------- //\cf2\par
+\par
+    \cf1 private\cf2  \cf1 void\cf2  SetFacingDirection(Vector2 moveInput) \{\par
+        \cf1 if\cf2  (moveInput.x > 0 && !IsFacingRight) \{\par
+            IsFacingRight = \cf1 true\cf2 ;\par
+        \} \cf1 else\cf2  \cf1 if\cf2  (moveInput.x < 0 && IsFacingRight) \{\par
+            IsFacingRight = \cf1 false\cf2 ;\par
+        \}\par
+    \}\par
+\par
+\par
+\par
+\par
+\par
+    \cf4 // ---------- <Callbacks ---------- //\cf2\par
+\par
+\par
+    \cf1 public\cf2  \cf1 void\cf2  OnMove(InputAction.CallbackContext context) \{\par
+        moveInput = context.ReadValue<Vector2>();\par
+\par
+        IsMoving = moveInput != Vector2.zero;\par
+\par
+\tab\tab SetFacingDirection(moveInput);\par
+    \}\par
+\par
+    \cf1 public\cf2  \cf1 void\cf2  OnLook(InputAction.CallbackContext context) \{\par
+        lookInput = context.ReadValue<Vector2>();\par
+\par
+    \}\par
+\par
+\par
+    \cf1 public\cf2  \cf1 void\cf2  OnRun(InputAction.CallbackContext context) \{\par
+\tab\tab\cf1 if\cf2  (context.started) \{\par
+\tab\tab\tab IsRunning = \cf1 true\cf2 ;\par
+\tab\tab\} \cf1 else\cf2  \cf1 if\cf2  (context.canceled) \{\par
+\tab\tab\tab IsRunning = \cf1 false\cf2 ;\par
+\tab\tab\}\par
+\tab\}\par
+\par
+\tab\cf1 public\cf2  \cf1 void\cf2  OnJump(InputAction.CallbackContext context) \{\par
+        \cf4 // TODO Check if is on the ground\cf2\par
+        jumpInput = context.ReadValue<\cf1 float\cf2 >();\par
+\tab\tab\cf1 if\cf2  (jumpInput > 0.5 && touchingDirections.IsGrounded) \{\par
+\tab\tab\tab\cf4 //isJumping= true;\cf2\par
+\tab\tab\}\par
+    \}\par
+\par
+\par
+\tab\cf1 public\cf2  \cf1 void\cf2  OnFire(InputAction.CallbackContext context) \{\par
+        \cf1 if\cf2  (context.ReadValue<\cf1 float\cf2 >() > 0.5f) \{\par
+\tab\tab\tab FirePressed = \cf1 true\cf2 ;\par
+        \} \cf1 else\cf2  \{\par
+            FirePressed = \cf1 false\cf2 ;\par
+        \}\par
+\tab\}\par
+\par
+    \cf4 // ---------- Callbacks> ---------- //\cf2\par
+\par
+\}\par
+\cf0\f1\fs22\par
+}
+ 
