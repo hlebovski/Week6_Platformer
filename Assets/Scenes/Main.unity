@@ -1762,7 +1762,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Jump higher the longer you hold jump button
+  m_text: 'Hold jump key to jump higher '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 474ba56883ce35144bd8946088d37977, type: 2}
   m_sharedMaterial: {fileID: -1531440669093738938, guid: 474ba56883ce35144bd8946088d37977,
@@ -1772,8 +1772,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278968319
-  m_fontColor: {r: 1, g: 0.8746395, b: 0.04400003, a: 1}
+    rgba: 4293507618
+  m_fontColor: {r: 0.13442758, g: 0.72946095, b: 0.9150943, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

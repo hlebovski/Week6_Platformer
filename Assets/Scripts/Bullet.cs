@@ -11,7 +11,7 @@ public class Bullet : MonoBehaviour {
     }
 
     private void OnCollisionEnter(Collision collision) {
-        Instantiate(HitEffect, transform.position, Quaternion.identity);
+        Instantiate(HitEffect, transform.position - Vector3.forward/2, Quaternion.identity);
         Destroy(gameObject);
     }
 }

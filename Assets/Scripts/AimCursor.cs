@@ -81,7 +81,7 @@ public class AimCursor : MonoBehaviour {
 
         }
 
-        Hand.rotation = Quaternion.LookRotation(toCursor2);
+        Hand.rotation = Quaternion.LookRotation(toCursor);
 
         toCursor2 = cursorScreen.position - PivotScreenPos;
         Head.rotation = Quaternion.Lerp(Head.rotation, Quaternion.LookRotation(toCursor2), Time.deltaTime * rotationSpeed);
