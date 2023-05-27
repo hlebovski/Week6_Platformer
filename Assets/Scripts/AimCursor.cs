@@ -58,16 +58,12 @@ public class AimCursor : MonoBehaviour {
             Gamepad = true;
         }
 
-        //YAngle = cursorScreen.position.x < PivotScreenPos.x ? bodyRotationAngle : -bodyRotationAngle;
-        //Head.rotation = Quaternion.Lerp(Head.rotation, Quaternion.Euler(0f, YAngle, 0f), Time.deltaTime * rotationSpeed);
         if (!Gamepad) {
             cursorScreen.position = Input.mousePosition;
 
             Vector3 PivotScreenPosXYZ = new Vector3(PivotScreenPos.x, PivotScreenPos.y, 0f);
 
             toCursor = cursorScreen.position - PivotScreenPosXYZ;
-            
-
         
         } else {
             Vector2 gamepadAimInput = controls.Player.Look.ReadValue<Vector2>();
@@ -83,6 +79,7 @@ public class AimCursor : MonoBehaviour {
 
         Hand.rotation = Quaternion.LookRotation(toCursor);
 
+        //specifically for  the head I wanted it to rotate smoothly in all directions, not clamped like hand
         toCursor2 = cursorScreen.position - PivotScreenPos;
         Head.rotation = Quaternion.Lerp(Head.rotation, Quaternion.LookRotation(toCursor2), Time.deltaTime * rotationSpeed);
 

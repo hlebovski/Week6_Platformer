@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour {
 
 	[SerializeField] float walkSpeed = 6f;
 	[SerializeField] float runSpeed = 10f;
-	[SerializeField] float airWalkSpeed = 6f;
+	[SerializeField] float fallingWalkSpeed = 6f;
 	[SerializeField] float jumpHeight = 3f;
 	[SerializeField] float gravityMultiplier = 1.5f;
 
@@ -36,25 +36,15 @@ public class PlayerController : MonoBehaviour {
 		get {
 			if (IsMoving && !touchingDirections.IsOnWall) {
 				if (touchingDirections.IsGrounded) {
-					if (IsRunning) { 
-						return runSpeed; 
-					} 
-					else { 
-						return walkSpeed; 
-					}
+					if (IsRunning) return runSpeed; 
+					else return walkSpeed; 
 				} else if (rbPlayer.velocity.y > 0) {
-					//Air Moves
-					if (IsRunning) {
-						return runSpeed;
-					} else {
-						return walkSpeed;
-					}
-				} else {
-                    if (IsRunning) {
-                        return airWalkSpeed;
-                    } else {
-                        return walkSpeed;
-                    }
+                    //Air moves
+                    if (IsRunning) return runSpeed;
+                    else return walkSpeed;
+                } else {
+                    //Falling
+                    return fallingWalkSpeed;
                 }
 			} else { 
 				//Idle speed is 0
@@ -187,6 +177,15 @@ public class PlayerController : MonoBehaviour {
         } else if (moveInput.x < 0 && IsFacingRight) {
             IsFacingRight = false;
         }
+    }
+
+    public void QuitGame() {
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+         Application.Quit();
+#endif
     }
 
 
