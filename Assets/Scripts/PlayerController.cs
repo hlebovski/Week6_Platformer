@@ -152,13 +152,16 @@ public class PlayerController : MonoBehaviour {
             isJumping = false;
         }
 
+        // Handling crouch
         if (IsCrouching) {
             touchingCol.transform.localScale = new Vector3(touchingCol.transform.localScale.x, 0.5f, touchingCol.transform.localScale.z);
             head.transform.position = Vector3.Lerp(head.transform.position, transform.position + Vector3.up * 0.5f, Time.deltaTime * 10); 
         } else {
             if (!touchingDirections.IsOnCeiling) {
-                touchingCol.transform.localScale = new Vector3(touchingCol.transform.localScale.x, 1f, touchingCol.transform.localScale.z);
-                head.transform.position = Vector3.Lerp(head.transform.position, transform.position + Vector3.up * 1.5f, Time.deltaTime * 10); 
+                
+                head.transform.position = Vector3.Lerp(head.transform.position, transform.position + Vector3.up * 1.5f, Time.deltaTime * 10);
+                touchingCol.transform.localScale = new Vector3(touchingCol.transform.localScale.x, 0.9f, touchingCol.transform.localScale.z);
+
             }
         }
 
